@@ -2,7 +2,7 @@
 [x,y]=size(Y);
 X=im2double(Y);
 x1=x*apha;y1=y*apha;
-A=zeros(x1,y1);%生成插值后矩阵模板
+A=zeros(x1,y1);
 for i=apha:apha:x1
     for j=apha:apha:y1
         A(i,j)=X(i/apha,j/apha);
@@ -70,6 +70,7 @@ for j=apha:apha:y1%先对行进行变化，使用newton方法,采取每八个点为一段，若段内变化
 end
 A=im2uint8(A);
 end
+
 function d=bianhualv(a,b)%计算相邻像素变化率
 c=abs(a-b);
 if(c/a<=0.3)
@@ -78,3 +79,4 @@ else
     d=0;
 end
 end
+000000000000000000
