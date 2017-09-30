@@ -1,4 +1,4 @@
-function Z1=NN(X,Y,Z,X1,Y1)%X,Y,Z为待插值点坐标，均为格子点
+function Z1=netnetwon(X,Y,Z,X1,Y1)%X,Y,Z为待插值点坐标，均为格子点
 M=Z';
 [n,m]=size(M);%取得插值矩阵的大小
 %首先对x方向newton递推
@@ -27,7 +27,6 @@ for j1=1:m
     L1=M2(:,j1);
     L1=L1';
     L2=netwondis(y1,L1,y);
-    L2=L2';
     A2(j1,:)=L2;
 end
 %计算（x,y）待插值点;
@@ -39,7 +38,6 @@ for i1=1:n1
     l1=A2(:,i1);
     l1=l1';
     Z=netwondis(x1,l1,x);
-    Z=Z';
     Z1(i1,:)=Z;
 end
 Z1=Z1';

@@ -1,4 +1,4 @@
- function Z1=NT(X,Y,Z,X1,Y1,a,c)%X,Y,Z为插值点坐标，T为待插值点坐标横纵坐标，P为T的插值结果
+function Z1=NT(X,Y,Z,X1,Y1)%X,Y,Z为插值点坐标，T为待插值点坐标横纵坐标，P为T的插值结果
 M=Z';
 [n,m]=size(M);%取得插值矩阵的大小
 %首先对x方向newton递推
@@ -16,7 +16,7 @@ P=zeros(1,m);
 for j1=1:m
     L1=M1(:,j1);
     L1=L1';
-    [S1,p]=thiele1(y,L1,a);
+        [S1,p]=thiele1(y,L1);
     P(1,j1)=p;
     M2(:,j1)=S1;
 end
@@ -28,7 +28,7 @@ A2=zeros(m,n1);
 for j1=1:m
     L1=M2(:,j1);
     L1=L1';
-    L2=thieledis1(y1,L1,y,P(1,j1),c);
+    L2=thieledis1(y1,L1,y,P(1,j1));
     A2(j1,:)=L2;
 end
 %计算（x,y）待插值点;
@@ -45,29 +45,18 @@ for i1=1:n1
 end
 Z1=Z1';
 end
-function C=thieledis1(X,Y,Z,p,c)%X为待插值点，Y为逆差商，Z为原插值节点横坐标，p为奇异点坐标
+function C=thieledis1(X,Y,Z,p)%X为待插值点，Y为逆差商，Z为原插值节点横坐标，p为奇异点坐标
 XH=size(X,2);
 YH=size(Y,2);
-C=zeros(1,XH);
 if(p~=0)
-    L=netwondis(X,Y(1,p:YH),Z(1,p:YH));
-    L=L';
-    c1=(X-Z(1,p-1)).*L+Y(1,p-1);
+    c=netwondis(X,Y(1,p+1:YH),Z(1,p+1:YH));
+    c=c';
+    c1=(X-Z(1,p)).*c+Y(1,p);
     for i=1:XH
-        if(abs(c1(1,i))>c)
-            if(p~=2)
-            a=thieledis(X(1,i),[Y(1,1:p-2),c1(1,i)],Z(1,1:p-1));
-            C(1,i)=a;
-            else
-                C(1,i)=Y(1,1);
-            end
-            else
-            if(p~=2)
-             a=thieledis(X(1,i),Y(1,1:p-2),Z(1,1:(p-2)));
-             C(1,i)=a;
-             else
-                C(1,i)=Y(1,1);
-            end
+        if(c1(1,i)>0.0001)
+    C=thieledis(X,[Y(1,1:p-1),c1(1,i)],Z(1,1:p));
+        else
+         C=thieledis(X,Y(1,1:p-1),Z(1,1:(p-1)));
         end
     end
 else
@@ -83,73 +72,10 @@ A=ones(y+1,1);
 A(1,1)=1;A(2,1)=Y(1,1);
 B=ones(y+1,1);
 B(1,1)=0;B(2,1)=1;
-
 for k=3:y+1
     A(k,1)=A(k-1,1)*Y(1,k-1)+(X(1,i)-Z(k-2))*A(k-2,1);
     B(k,1)=B(k-1,1)*Y(1,k-1)+(X(1,i)-Z(k-2))*B(k-2,1);
 end
- if(abs(B(y+1,1))<0.00001)
-    c(1,i)=Y(1,1);
- else
- c(1,i)=A(y+1,1)/B(y+1,1);
- end
+c(1,i)=A(y+1,1)/B(y+1,1);
 end
-end
-function [c,count]=thiele1(x,y,a)%x,y为待插值点的坐标
-x1=size(x,2);
-z=zeros(x1,x1);
-z(:,1)=y';
-p=0;
-count=0;
-for j=2:x1
-    for i=j:x1
-        if(abs(z(i,j-1)-z(j-1,j-1))>a&&p==0)
-        z(i,j)=(x(1,i)-x(1,j-1))/(z(i,j-1)-z(j-1,j-1)+eps);
-        else
-         if(p==0)
-             p=1;
-             count=j;
-         end
-        z(i,j)=(z(i,j-1)-z(j-1,j-1))/(x(1,i)-x(1,j-1)+eps);
-        end
-    end
-end
-c=zeros(1,x1);
-for i=1:x1
-    c(1,i)=z(i,i);
-end
-end
-function S=netwon(x,y)
-x=x';y=y';%转致
-hangx=size(x,1);%获取x的行数;
-H=ones(hangx,hangx);%生成行数等于x的矩阵，用来存取系数
-for j=1:hangx%这个循环是算法核心，即那个倒三角的表
-    if(j==1)
-        H(:,1)=y;
-    else
-    for i=j:hangx
-        H(i,j)=(H(i,j-1)-H(i-1,j-1))/(x(i,1)-x(i-j+1,1)+eps);
-    end
-    end
-end
-S=zeros(1,hangx);
-for i=1:hangx
-    S(1,i)=H(i,i);
-end
-end
-function Z=netwondis(z,y,x)%输出插商的值，z为待插值点，x为原插值点，y为插商值
-hangz=size(z,1);
-Z=ones(hangz,1);
-x=x';
-hangx=size(x,1);
-for k=1:hangx
-    if(k==1)
-        Z(:,1)=y(1,1);
-        S=z-x(1,1);
-    else
-        Z=Z+y(1,k)*S;
-        S=S.*(z-x(k,1));
-    end
-end
- Z=Z';
-end
+end  

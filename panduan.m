@@ -1,8 +1,8 @@
 function X=panduan(A,p)
-B=sum(sum(A))/9;
+B=sum(sum(A))/16;
 s=0;
-for i1=1:3
-    for j1=1:3
+for i1=1:4
+    for j1=1:4
         s=s+(B-A(i1,j1))^2;
     end
 end
